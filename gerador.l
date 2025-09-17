@@ -12,6 +12,10 @@
 	return T_FLOAT;
 }
 
+"a"|"array" {
+	return T_ARRAY;
+}
+
 [-| ][0-9]+ {
 	yylval.int_val = atoi(yytext);
 	return T_NUMBER;

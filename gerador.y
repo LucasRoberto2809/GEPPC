@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "utilitarios.h"
 
 extern int yylex();
 extern int yyerror(char *s);
@@ -14,40 +15,46 @@ extern FILE *yyin;
 
 %union {
 		int int_val;
-		float float_val;
 }
 
+%token <int_val> T_NUMBER
+%token T_COMMA
 %token T_INT
 %token T_FLOAT
-%token T_COMMA
-%token <int_val> T_NUMBER
+%token T_ARRAY
 
 // Regras e Lógica de Execução
 
 %%
 
-inicio: regra_inteiro | regra_float;
+inicio: regra_inteiro | regra_float | regra_array;
+
+regra_array: regra_array_int | regra_array_float;
+
+regra_array_int: T_ARRAY T_COMMA T_INT T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER {
+					 /* array, int, len, min, max */
+		int len = $5;
+		int min = $7;
+		int max = $9;
+		printf("nothing yet\n");
+};
+
+regra_array_float: T_ARRAY T_COMMA T_FLOAT T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER {
+					 /* array, int, len, min, max */
+		int len = $5;
+		int min = $7;
+		int max = $9;
+		printf("nothing yet\n");
+};
 
 regra_inteiro: T_INT T_COMMA T_NUMBER T_COMMA T_NUMBER {
-						 /* int, -100, 100 */
-		int min = $3;
-		int max = $5;
-		int random_num = (random() % (max - min + 1)) + min;
-		printf("%d\n", random_num);
+						 /* int, min, max */
+		printf("%d\n", int_random($3, $5));
 };
 
 regra_float: T_FLOAT T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER {
-					 /* float, 10, -100, 100 */
-		int len = $3;
-		int min = $5;
-		int max = $7;
-		double random_num = (double)(random() % (max - min + 1)) + min;
-		int i=0, div=10.0;
-		for (i=0; i<len; i++) {
-			random_num += (double)(random() % 9)/ div;
-			div *= 10.0;
-		}
-		printf("%.*f\n", len, random_num);
+					 /* float, decimals, min, max */
+		printf("%f\n", float_random($3, $5, $7));
 };
 
 %%
