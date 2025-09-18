@@ -33,18 +33,18 @@ regra_array: regra_array_int | regra_array_float;
 
 regra_array_int: T_ARRAY T_COMMA T_INT T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER {
 					 /* array, int, len, min, max */
-		int len = $5;
-		int min = $7;
-		int max = $9;
-		printf("nothing yet\n");
+		for (int i=0; i<$5; i++) {
+			printf("%d ", int_random($7, $9));
+		}
+		printf("\n");
 };
 
-regra_array_float: T_ARRAY T_COMMA T_FLOAT T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER {
-					 /* array, int, len, min, max */
-		int len = $5;
-		int min = $7;
-		int max = $9;
-		printf("nothing yet\n");
+regra_array_float: T_ARRAY T_COMMA T_FLOAT T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER {
+					 /* array, float, len, decimal, min, max */
+		for (int i=0; i<$5; i++) {
+			printf("%.*f ", $7, float_random($7, $9, $11));
+		}
+		printf("\n");
 };
 
 regra_inteiro: T_INT T_COMMA T_NUMBER T_COMMA T_NUMBER {
@@ -53,8 +53,8 @@ regra_inteiro: T_INT T_COMMA T_NUMBER T_COMMA T_NUMBER {
 };
 
 regra_float: T_FLOAT T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER {
-					 /* float, decimals, min, max */
-		printf("%f\n", float_random($3, $5, $7));
+					 /* float, decimal, min, max */
+		printf("%.*f\n", $3, float_random($3, $5, $7));
 };
 
 %%
