@@ -13,3 +13,4 @@ double float_random(int len, int min, int max) {
 	}
 	return random_num;
 }
+

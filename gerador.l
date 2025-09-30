@@ -4,15 +4,15 @@
 
 %%
 
-"i"|"int"|"inteiro" {
+"int" {
 	return T_INT;
 }
 
-"f"|"float" {
+"float" {
 	return T_FLOAT;
 }
 
-"a"|"array" {
+"array" {
 	return T_ARRAY;
 }
 
