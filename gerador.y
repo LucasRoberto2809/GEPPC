@@ -2,9 +2,6 @@
 
 %{
 #include "utilitarios.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
 extern int yylex();
 extern int yyerror(char *s);
@@ -16,8 +13,8 @@ extern FILE *yyin;
 
 %union {
 	int int_val;
-	struct FloatParametros *float_p; 
-	struct IntParametros *int_p; 
+	struct Parameters *parameters_ptr;
+	struct Command *command_ptr;
 }
 
 %token <int_val> T_NUMBER
@@ -26,72 +23,95 @@ extern FILE *yyin;
 %token T_FLOAT
 %token T_ARRAY
 
-%type <float_p> float_type
-%type <int_p> int_type
+%type <command_ptr> begin
+%type <command_ptr> program
+%type <command_ptr> command
+%type <command_ptr> out_int
+%type <command_ptr> out_float
+%type <command_ptr> array
+%type <command_ptr> int_array
+%type <command_ptr> float_array
+%type <parameters_ptr> float_type
+%type <parameters_ptr> int_type
 
 // Regras e Lógica de Execução
 
 %%
 
-begin: out_int | out_float | array;
+begin: program {
+	run_command($1);
+	clear_commands($1);
+};
 
-array: int_array| float_array;
+program: command {$$ = $1;}
+			 | command program {$$ = link_command($1, $2);};
+
+command: out_int {$$ = $1;}
+			 | out_float {$$ = $1;}
+			 | array {$$ = $1;};
+
+array: int_array {$$ = $1;}
+		 | float_array {$$ = $1;};
 
 int_array: T_ARRAY T_COMMA T_NUMBER T_COMMA int_type {
-	/* array, len, int, min, max */
-	int len = $3 - 1;
-	int min = $5->min;
-	int max = $5->max;
-	for (int i=0; i<len; i++) {
-		printf("%d ", int_random(min, max));
+	/* array, collumns, int, min, max */
+	$5->rows = 1;
+	$5->collumns = $3;
+	$$ = make_command_node(NodeArray, *$5);
+	free($5);
 	}
-	// ultimo elemento
-	printf("%d\n", int_random(min, max));
+	| T_ARRAY T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA int_type { 
+	/* array, lines, collumns, int, min, max */
+	$7->rows = $3;
+	$7->collumns = $5;
+	$$ = make_command_node(NodeArray, *$7);
+	free($7);
 };
 
 float_array: T_ARRAY T_COMMA T_NUMBER T_COMMA float_type {
-	/* array, len, float, decimal, min, max */
-	int len = $3 - 1;
-	int decimal = $5->decimal;
-	int min = $5->min;
-	int max = $5->max;
-	for (int i=0; i<len; i++) {
-		printf("%.*f ", decimal, float_random(decimal, min, max));
+	/* array, collumns, int, min, max */
+	$5->rows = 1;
+	$5->collumns = $3;
+	$$ = make_command_node(NodeArray, *$5);
+	free($5);
 	}
-	// ultimo elemento
-	printf("%.*f\n", decimal, float_random(decimal, min, max));
+	| T_ARRAY T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA float_type { 
+	/* array, lines, collumns, int, min, max */
+	$7->rows = $3;
+	$7->collumns = $5;
+	$$ = make_command_node(NodeArray, *$7);
+	free($7);
 };
 
 out_float: float_type {
 	/* float, decimal, min, max */
-	int decimal = $1->decimal;
-	int min = $1->min;
-	int max = $1->max;
-	printf("%.*f\n", decimal, float_random(decimal, min, max));
-}
+	$$ = make_command_node(NodeFloat, *$1);
+	free($1);
+};
 
 out_int: int_type {
 	/* int, min, max */
-	int min = $1->min;
-	int max = $1->max;
-	printf("%d\n", int_random(min, max));
-}
+	$$ = make_command_node(NodeInt, *$1);
+	free($1);
+};
 
 float_type: T_FLOAT T_COMMA T_NUMBER T_COMMA T_NUMBER T_COMMA T_NUMBER {
-	$$ = malloc(sizeof(struct FloatParametros));
-	if($$ == NULL){ // error handling for malloc
-		yyerror("Memory allocation failed\n");
+	$$ = malloc(sizeof(Parameters));
+	if ($$ == NULL) {
+		yyerror("Failed to allocate memory");
 	}
+	$$->basic_type = BasicTypeFloat;
 	$$->decimal = $3;
 	$$->min = $5;
 	$$->max = $7;
 };
 
 int_type: T_INT T_COMMA T_NUMBER T_COMMA T_NUMBER {
-	$$ = malloc(sizeof(struct IntParametros));
-	if($$ == NULL){ // error handling for malloc
-		yyerror("Memory allocation failed\n");
+	$$ = malloc(sizeof(Parameters));
+	if ($$ == NULL) {
+		yyerror("Failed to allocate memory");
 	}
+	$$->basic_type = BasicTypeInt;
 	$$->min = $3;
 	$$->max = $5;
 };
