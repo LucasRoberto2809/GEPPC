@@ -25,6 +25,15 @@
 	return T_COMMA; 
 }
 
+[a-zA-Z][a-zA-Z0-9_]* {
+	yyval.string_val = strdup(yytext);
+	return T_STRING;
+}
+
+"=" {
+	return T_ATR;
+}
+
 [ \t]+ {
 	/* ignora espaços e tabs */
 }

@@ -13,11 +13,13 @@ extern FILE *yyin;
 
 %union {
 	int int_val;
+	char *string_val;
 	struct Parameters *parameters_ptr;
 	struct Command *command_ptr;
 }
 
 %token <int_val> T_NUMBER
+%token <string_val> T_STRING
 %token T_COMMA
 %token T_INT
 %token T_FLOAT
@@ -46,9 +48,28 @@ begin: program {
 program: command {$$ = $1;}
 			 | command program {$$ = link_command($1, $2);};
 
-command: out_int {$$ = $1;}
+command: variable
+			 | out_int {$$ = $1;}
 			 | out_float {$$ = $1;}
 			 | array {$$ = $1;};
+
+variable: T_STRING T_ATR command {
+	// logica de inserção de ponteiro de comando na trie 
+	insert_command_trie($1, $3);
+	free($1);
+	$$ = $3;
+	}
+	| T_STRING T_ATR T_NUMBER {
+	// logica de inserção de numero na trie 
+	insert_number_trie($1, $3);
+	free($1);
+	Parameter p = {
+		.basic_type = BasicTypeInt;
+		.min = $3;
+		.max = $3;
+	}
+	$$ = make_command_node(NodeVariable, p);
+	};
 
 array: int_array {$$ = $1;}
 		 | float_array {$$ = $1;};

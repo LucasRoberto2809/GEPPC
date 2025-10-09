@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 struct FloatParametros{
 	int decimal;
@@ -30,9 +31,11 @@ void clear_commands();
 typedef enum {
 	BasicTypeInt,
 	BasicTypeFloat,
+	BasicTypeString,
 } BasicType;
 
 typedef enum {
+	NodeVariable,
 	NodeInt,
 	NodeFloat,
 	NodeArray,
